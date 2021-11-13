@@ -7,7 +7,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget, QTableWidgetItem, QMessageBox
 from PyQt5.QtWidgets import QMainWindow
 from Designconvertedtopy import first_for_proj, about_programm, Library, favourites, readlist, inprocess, Append_book, \
-    Delete, Read, Append_favourite, Delete_fav, Append_readlist, Delete_readlist, Append_and_delete
+    Delete, Read, Append_favourite, Delete_fav, Append_readlist, Delete_readlist, Append_and_delete, ProceedReading
 
 """Класс по открытию окна с информацией о программе"""
 
@@ -256,7 +256,7 @@ class Inprocess(QWidget, inprocess.Ui_FOrm):
         self.deletes4.show()
 
     def about_readding_books(self):
-        self.readdding = ReaddingBooks()
+        self.readdding = ContinueReading()
         self.readdding.show()
 
 
@@ -441,11 +441,11 @@ class ReaddingBooks(QWidget, Read.Ui_FORM):
        INNER JOIN
        link ON Books.link_id = link.id;''').fetchall()
         cur2 = self.con.cursor()
-        result2 = cur2.execute('''SELECT Readed.title,
+        result2 = cur2.execute('''SELECT Inprocess.title,
                link.way
-          FROM Readed
+          FROM Inprocess
                INNER JOIN
-               link ON Readed.link_id = link.id;''').fetchall()
+               link ON Inprocess.link_id = link.id;''').fetchall()
         list_of_lways = [i[1] for i in result2]
         flag = True
         try:
@@ -887,7 +887,77 @@ class AppendandDel(QWidget, Append_and_delete.UI_FoRM):
         self.fdelnamebook = QFileDialog.getOpenFileName(self, filter="All (*);;Exes (*.txt )",
                                                         initialFilter="Exes (*.txt )")[0]
         self.filenameedt.setText(self.fdelnamebook)
+class ContinueReading(QWidget, ProceedReading.UI_FoRm):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+        self.openfbtn.clicked.connect(self.select_file)
+        self.readbtn.clicked.connect(self.open_file)
+        self.themebtn.clicked.connect(self.change_theme)
+        self.con = sqlite3.connect("llibrary.db")
+        self.comboBox.activated[str].connect(self.onActivated)
+        self.size = "8"
 
+    def change_theme(self):
+        if self.themebtn.text() == 'Тёмная':
+            self.plainTextEdit.setStyleSheet("""
+                                                  QPlainTextEdit {background-color: #000000;}
+                                                  QPlainTextEdit {background-color:#000000} QPlainTextEdit {color:#FFFFFF}
+                                                  QPlainTextEdit {
+                                                  border-style: outset;
+                                                  border-width: 1px;
+                                                  border-color: #FFFFFF;}""")
+            self.themebtn.setText("Светлая")
+        elif self.themebtn.text() == 'Светлая':
+            self.plainTextEdit.setStyleSheet("""
+                                                  QPlainTextEdit {background-color: #FFFFFF;}
+                                                  QPlainTextEdit {background-color:#FFFFFF} QPlainTextEdit {color:#000000}
+                                                  QPlainTextEdit {
+                                                  border-style: outset;
+                                                  border-width: 1px;
+                                                  border-color: #000000;}""")
+            self.themebtn.setText("Тёмная")
+
+    def open_file(self):
+        cur = self.con.cursor()
+        result = cur.execute('''SELECT Inprocess.title,
+                 link.way
+            FROM Inprocess
+                 INNER JOIN
+                 link ON Inprocess.link_id = link.id;''').fetchall()
+        flag = True
+        try:
+            self.title = self.titleedt.text()
+            self.file_name = self.fileedt.text()
+            tit_and_fname = (self.title, self.file_name)
+            if not self.title:
+                self.wronglbl.setText('введите корректно название книги')
+                flag = False
+            if not self.file_name:
+                self.wronglbl.setText('выберите корректно файл')
+                flag = False
+            if tit_and_fname not in result:
+                self.wronglbl.setText('такой книги нет')
+                flag = False
+            if flag:
+                self.wronglbl.setText('')
+                with open(self.file_name, 'r', encoding='UTF-8') as file:
+                    self.plainTextEdit.setPlainText(file.read())
+                    self.plainTextEdit.setReadOnly(True)
+
+        except Exception as e:
+            self.wronglbl.setText(str(e))
+
+    def select_file(self):
+        self.fnamebook = QFileDialog.getOpenFileName(self, filter="All (*);;Exes (*.txt )",
+                                                     initialFilter="Exes (*.txt )")[0]
+        self.fileedt.setText(self.fnamebook)
+
+    def onActivated(self, text):
+        if not text:
+            text = '10'
+        self.size = text
+        self.plainTextEdit.setFont(QtGui.QFont("Times", int(self.size), QtGui.QFont.Bold))
 
 def except_hook(cls, exception, traceback):
     sys.excepthook(cls, exception, traceback)
