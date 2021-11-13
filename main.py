@@ -107,7 +107,10 @@ class LibraryBooks(QWidget, Library.Ui_form):
         self.readding = ReaddingBooks()
         self.readding.show()
 
+
 """Класс для показа избранных книг"""
+
+
 class FavouriteBooks(QWidget, favourites.Ui_Form):
     def __init__(self):
         super().__init__()
@@ -151,7 +154,10 @@ class FavouriteBooks(QWidget, favourites.Ui_Form):
         self.deletes2 = DeleteFavouritesBooks()
         self.deletes2.show()
 
+
 """класс для просмотра списка прочитанных книг"""
+
+
 class ReadBooks(QWidget, readlist.Ui_Widget):
     def __init__(self):
         super().__init__()
@@ -200,7 +206,10 @@ class ReadBooks(QWidget, readlist.Ui_Widget):
         self.deletes3 = DeleteReadlist()
         self.deletes3.show()
 
+
 """класс для просмотра книг, которые в процессе"""
+
+
 class Inprocess(QWidget, inprocess.Ui_FOrm):
     def __init__(self):
         super().__init__()
@@ -250,7 +259,10 @@ class Inprocess(QWidget, inprocess.Ui_FOrm):
         self.readdding = ReaddingBooks()
         self.readdding.show()
 
+
 """класс по добавлению книг в общий список"""
+
+
 class AppendBooks(QWidget, Append_book.Ui_FoRm):
     def __init__(self):
         super().__init__()
@@ -337,7 +349,10 @@ class AppendBooks(QWidget, Append_book.Ui_FoRm):
                                                      initialFilter="Exes (*.txt )")[0]
         self.filenameedit.setText(self.fnamebook)
 
+
 """класс для удаления книг из общего списка книг"""
+
+
 class DeleteBooks(QWidget, Delete.Ui_ForM):
     def __init__(self):
         super().__init__()
@@ -383,7 +398,10 @@ class DeleteBooks(QWidget, Delete.Ui_ForM):
                                                         initialFilter="Exes (*.txt )")[0]
         self.filenameedt.setText(self.fdelnamebook)
 
+
 """класс для чтения самой книги"""
+
+
 class ReaddingBooks(QWidget, Read.Ui_FORM):
     def __init__(self):
         super().__init__()
@@ -448,8 +466,8 @@ class ReaddingBooks(QWidget, Read.Ui_FORM):
                 flag = False
             if flag:
                 self.wronglbl.setText('')
-                currrrr = self.con.cursor()
-                queee = f"""INSERT INTO inprocess (
+                cur3 = self.con.cursor()
+                que3 = f"""INSERT INTO inprocess (
                                               title,
                                               link_id
                                           )VALUES (
@@ -460,7 +478,7 @@ class ReaddingBooks(QWidget, Read.Ui_FORM):
                                                    WHERE way = '{self.file_name}'
                                               )
                                           );"""
-                currrrr.execute(queee)
+                cur3.execute(que3)
                 self.con.commit()
                 with open(self.file_name, 'r', encoding='UTF-8') as file:
                     self.plainTextEdit.setPlainText(file.read())
@@ -480,7 +498,10 @@ class ReaddingBooks(QWidget, Read.Ui_FORM):
         self.size = text
         self.plainTextEdit.setFont(QtGui.QFont("Times", int(self.size), QtGui.QFont.Bold))
 
+
 """класс по удалению книг из списка избранное"""
+
+
 class DeleteFavouritesBooks(QWidget, Delete_fav.UI_Form):
     def __init__(self):
         super().__init__()
@@ -526,7 +547,10 @@ class DeleteFavouritesBooks(QWidget, Delete_fav.UI_Form):
                                                         initialFilter="Exes (*.txt )")[0]
         self.filenameedt.setText(self.fdelnamebook)
 
+
 """класс для добавления книг в список избранное"""
+
+
 class AppendFavouriteBooks(QWidget, Append_favourite.UI_FOrm):
     def __init__(self):
         super().__init__()
@@ -536,6 +560,18 @@ class AppendFavouriteBooks(QWidget, Append_favourite.UI_FOrm):
         self.con = sqlite3.connect("llibrary.db")
 
     def append_book_favourites(self):
+        cur = self.con.cursor()
+        result = cur.execute('''SELECT Inprocess.title, link.way
+                  FROM Inprocess
+                       INNER JOIN
+                       link ON Inprocess.link_id = link.id;''').fetchall()
+        list_of_lways = [i[1] for i in result]
+        cur2 = self.con.cursor()
+        result2 = cur2.execute('''SELECT Books.title,
+               link.way
+          FROM Books
+               INNER JOIN
+               link ON Books.link_id = link.id;''').fetchall()
         flag = True
         try:
             self.nameauth = self.authoredit.text()
@@ -552,6 +588,12 @@ class AppendFavouriteBooks(QWidget, Append_favourite.UI_FOrm):
                 self.genre = 'no inf'
             if not self.fnamebook:
                 self.infwrong.setText('нет файла')
+                flag = False
+            if self.fnamebook in list_of_lways:
+                self.infwrong.setText('такая книга уже в списке')
+                flag = False
+            if (self.titlebook, self.fnamebook) not in result2:
+                self.infwrong.setText('такой книги нет в библиотеке')
                 flag = False
             if flag:
                 cur = self.con.cursor()
@@ -613,16 +655,31 @@ class AppendFavouriteBooks(QWidget, Append_favourite.UI_FOrm):
                                                      initialFilter="Exes (*.txt )")[0]
         self.filenameedit.setText(self.fnamebook)
 
+
 """класс для добавления книг в прочитанное"""
+
+
 class AppendReadlist(QWidget, Append_readlist.UI_FORm):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
         self.selectfile.clicked.connect(self.select_file)
-        self.appendbtn.clicked.connect(self.append_book_favourites)
+        self.appendbtn.clicked.connect(self.append_book_readlist)
         self.con = sqlite3.connect("llibrary.db")
 
-    def append_book_favourites(self):
+    def append_book_readlist(self):
+        cur = self.con.cursor()
+        result = cur.execute('''SELECT Readed.title, link.way
+                          FROM Readed
+                               INNER JOIN
+                               link ON Readed.link_id = link.id;''').fetchall()
+        list_of_lways = [i[1] for i in result]
+        cur2 = self.con.cursor()
+        result2 = cur2.execute('''SELECT Books.title,
+                       link.way
+                  FROM Books
+                       INNER JOIN
+                       link ON Books.link_id = link.id;''').fetchall()
         flag = True
         try:
             self.nameauth = self.authoredit.text()
@@ -639,6 +696,12 @@ class AppendReadlist(QWidget, Append_readlist.UI_FORm):
                 self.genre = 'no inf'
             if not self.fnamebook:
                 self.infwrong.setText('нет файла')
+                flag = False
+            if self.fnamebook in list_of_lways:
+                self.infwrong.setText('такая книга уже в списке')
+                flag = False
+            if (self.titlebook, self.fnamebook) not in result2:
+                self.infwrong.setText('такой книги нет в библиотеке')
                 flag = False
             if flag:
                 cur = self.con.cursor()
@@ -700,7 +763,10 @@ class AppendReadlist(QWidget, Append_readlist.UI_FORm):
                                                      initialFilter="Exes (*.txt )")[0]
         self.filenameedit.setText(self.fnamebook)
 
+
 """класс для удления книг из списка прочитанное"""
+
+
 class DeleteReadlist(QWidget, Delete_readlist.UI_FORM):
     def __init__(self):
         super().__init__()
@@ -746,7 +812,10 @@ class DeleteReadlist(QWidget, Delete_readlist.UI_FORM):
                                                         initialFilter="Exes (*.txt )")[0]
         self.filenameedt.setText(self.fdelnamebook)
 
+
 """класс для завершения чтения книги и добавления его в прочитанное"""
+
+
 class AppendandDel(QWidget, Append_and_delete.UI_FoRM):
     def __init__(self):
         super().__init__()
