@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>463</width>
+    <height>397</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Reader</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
+   <item row="1" column="0">
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>2</number>
+     </property>
+     <widget class="QWidget" name="librarytab">
+      <attribute name="title">
+       <string>Library</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="2">
+        <widget class="QPushButton" name="beginreadding">
+         <property name="text">
+          <string>Начать читать</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="appendlib">
+         <property name="text">
+          <string>Добавить</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="deletelib">
+         <property name="text">
+          <string>удалить</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QComboBox" name="comboBox">
+         <item>
+          <property name="text">
+           <string>сортировка по</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Жанр</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Автор</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Название книги</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="4">
+        <widget class="QTableWidget" name="libtableWidget"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="favouritestab">
+      <attribute name="title">
+       <string>Favourites</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="1" column="0">
+        <widget class="QPushButton" name="appendfav">
+         <property name="text">
+          <string>Добавить</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="deletefav">
+         <property name="text">
+          <string>Удалить</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QComboBox" name="favcomboBox">
+         <item>
+          <property name="text">
+           <string>сортировка по</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Жанр</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Автор</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Название книги</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="3">
+        <widget class="QTableWidget" name="favtableWidget"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="readedtab">
+      <attribute name="title">
+       <string>Readed</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="1" column="0">
+        <widget class="QPushButton" name="appendtofav">
+         <property name="text">
+          <string>В избранное</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="appendraed">
+         <property name="text">
+          <string>добавить</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="deleteread">
+         <property name="text">
+          <string>Удалить из прочитанного</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QComboBox" name="readcomboBox">
+         <item>
+          <property name="text">
+           <string>сортировка по</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Жанр</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Автор</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Название книги</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="0" colspan="4">
+        <widget class="QTableWidget" name="readtableWidget"/>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QPushButton" name="pushButton">
+     <property name="maximumSize">
+      <size>
+       <width>130</width>
+       <height>23</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>обновить</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

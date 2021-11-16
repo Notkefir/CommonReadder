@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>370</width>
-    <height>259</height>
+    <width>345</width>
+    <height>228</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,12 +16,6 @@
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0" colspan="2">
     <widget class="QLabel" name="label">
-     <property name="maximumSize">
-      <size>
-       <width>500</width>
-       <height>80</height>
-      </size>
-     </property>
      <property name="whatsThis">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
@@ -58,7 +52,14 @@
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QLineEdit" name="genreedit"/>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLineEdit" name="genreedit"/>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBox"/>
+     </item>
+    </layout>
    </item>
    <item row="4" column="0">
     <widget class="QPushButton" name="selectfile">
