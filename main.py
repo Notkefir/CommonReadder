@@ -17,7 +17,7 @@ class MyWidget(QMainWindow, first_for_proj.Ui_CommonReader):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.fname = 'project_qt/open-book.png'
+        self.fname = 'open-book.png'
         self.orig = Image.open(self.fname)
         self.orig_pixels = self.orig.load()
         self.im = Image.open(self.fname)
@@ -25,6 +25,7 @@ class MyWidget(QMainWindow, first_for_proj.Ui_CommonReader):
         self.pixmap = QPixmap.fromImage(self.a)
         self.startpicture.setPixmap(self.pixmap)
         self.startbtn.clicked.connect(self.start_program)
+        self.aboutProgramm.clicked.connect(self.about_programm)
 
     def about_programm(self):
         self.second = AboutProgram()
@@ -60,6 +61,8 @@ class Tabs(QWidget, Readertab.UI_formtab):
         self.favcomboBox.activated[str].connect(self.onActivatedfav)
         self.readcomboBox.activated[str].connect(self.onActivatedread)
         self.update_table.clicked.connect(self.updatetables)
+        self.tofavbtn.clicked.connect(self.append_fav)
+        self.toreadedbtn.clicked.connect(self.append_readed_from_books)
         self.option = ''
         self.con = sqlite3.connect("llibrary.db")
         self.titles = None
@@ -148,7 +151,6 @@ class Tabs(QWidget, Readertab.UI_formtab):
         # Получаем список элементов без повторов и их id
         rows = list(set([i.row() for i in self.libtableWidget.selectedItems()]))
         ids = [self.libtableWidget.item(i, 3).text() for i in rows]
-        print(ids)
         # Спрашиваем у пользователя подтверждение на удаление элементов
         valid = QMessageBox.question(
             self, '', "Действительно удалить элементы с id " + ",".join(ids),
@@ -158,58 +160,120 @@ class Tabs(QWidget, Readertab.UI_formtab):
         if valid == QMessageBox.Yes:
             cur = self.con.cursor()
             cur.execute(
-                "delete from Books where Books.link_id in (select link_id from link where link.way in (" + ", ".join(
-                    '?' * len(ids)) + ")"")", ids)
+                "delete from Books where Books.link_id in (select link.id from link where link.way in (" + ", ".join(
+                    '?' * len(ids)) + ")" + ")", ids)
+            cur.execute("DELETE FROM link WHERE way IN (" + ", ".join(
+                '?' * len(ids)) + ")", ids)
             self.con.commit()
 
     def append_fav(self):
         """добавление в избранное"""
         # Получаем список элементов без повторов и их id
-        rows = list(set([i.row() for i in self.readtableWidget.selectedItems()]))
-        way = [self.readtableWidget.item(i, 3).text() for i in rows]
-        bookname = [self.readtableWidget.item(i, 0).text() for i in rows]
-        auth = [self.readtableWidget.item(i, 1).text() for i in rows]
-        genre = [self.readtableWidget.item(i, 2).text() for i in rows]
-        print(bookname)
-        # Спрашиваем у пользователя подтверждение на удаление элементов
-        valid = QMessageBox.question(
-            self, '', "Действительно добавить элементы",
-            QMessageBox.Yes, QMessageBox.No)
-        # Если пользователь ответил утвердительно, удаляем элементы.
-        # Не забываем зафиксировать изменения
-        try:
-            if valid == QMessageBox.Yes:
-                cur = self.con.cursor()
-                for i in range(len(way)):
-                    print(1)
-                    cur.execute(f"""INSERT INTO Favourites (
-                                      Authors_id,
-                                      title,
-                                      genre_id,
-                                      link_id
-                                  )
-                                  VALUES (
-                                      (
-                                          SELECT id
-                                            FROM Authors
-                                           WHERE Author = '{auth[i]}'
-                                      ),
-                                      '{bookname[i]}',
-                                      (
-                                          SELECT id
-                                            FROM genres
-                                           WHERE title = '{genre[i]}'
-                                      ),
-                                      (
-                                          SELECT id
-                                            FROM link
-                                           WHERE way = '{way[i]}'
+        button = QApplication.instance().sender()
+        rows, way, bookname, auth, genre = [], [], [], [], []
+        if button.text() == 'избранное':
+            rows = list(set([i.row() for i in self.libtableWidget.selectedItems()]))
+            way = [self.libtableWidget.item(i, 3).text() for i in rows]
+            bookname = [self.libtableWidget.item(i, 0).text() for i in rows]
+            auth = [self.libtableWidget.item(i, 1).text() for i in rows]
+            genre = [self.libtableWidget.item(i, 2).text() for i in rows]
+        if button.text() == 'В избранное':
+            rows = list(set([i.row() for i in self.readtableWidget.selectedItems()]))
+            way = [self.readtableWidget.item(i, 3).text() for i in rows]
+            bookname = [self.readtableWidget.item(i, 0).text() for i in rows]
+            auth = [self.readtableWidget.item(i, 1).text() for i in rows]
+            genre = [self.readtableWidget.item(i, 2).text() for i in rows]
+        if rows:
+            print(bookname)
+            # Спрашиваем у пользователя подтверждение на удаление элементов
+            valid = QMessageBox.question(
+                self, '', "Действительно добавить элементы",
+                QMessageBox.Yes, QMessageBox.No)
+            # Если пользователь ответил утвердительно, удаляем элементы.
+            # Не забываем зафиксировать изменения
+            try:
+                if valid == QMessageBox.Yes:
+                    cur = self.con.cursor()
+                    for i in range(len(way)):
+                        print(1)
+                        cur.execute(f"""INSERT INTO Favourites (
+                                          Authors_id,
+                                          title,
+                                          genre_id,
+                                          link_id
                                       )
-                                  );""")
-                self.con.commit()
-        except Exception as e:
-            self.infwrong = Dialog()
-            self.infwrong.show()
+                                      VALUES (
+                                          (
+                                              SELECT id
+                                                FROM Authors
+                                               WHERE Author = '{auth[i]}'
+                                          ),
+                                          '{bookname[i]}',
+                                          (
+                                              SELECT id
+                                                FROM genres
+                                               WHERE title = '{genre[i]}'
+                                          ),
+                                          (
+                                              SELECT id
+                                                FROM link
+                                               WHERE way = '{way[i]}'
+                                          )
+                                      );""")
+                    self.con.commit()
+            except Exception as e:
+                self.infwrong = Dialog()
+                self.infwrong.show()
+
+    def append_readed_from_books(self):
+        """добавление в избранное"""
+        # Получаем список элементов без повторов и их id
+        rows = list(set([i.row() for i in self.libtableWidget.selectedItems()]))
+        way = [self.libtableWidget.item(i, 3).text() for i in rows]
+        bookname = [self.libtableWidget.item(i, 0).text() for i in rows]
+        auth = [self.libtableWidget.item(i, 1).text() for i in rows]
+        genre = [self.libtableWidget.item(i, 2).text() for i in rows]
+        if rows:
+            print(bookname)
+            # Спрашиваем у пользователя подтверждение на удаление элементов
+            valid = QMessageBox.question(
+                self, '', "Действительно добавить элементы",
+                QMessageBox.Yes, QMessageBox.No)
+            # Если пользователь ответил утвердительно, удаляем элементы.
+            # Не забываем зафиксировать изменения
+            try:
+                if valid == QMessageBox.Yes:
+                    cur = self.con.cursor()
+                    for i in range(len(way)):
+                        print(1)
+                        cur.execute(f"""INSERT INTO Readed (
+                                          Authors_id,
+                                          title,
+                                          genre_id,
+                                          link_id
+                                      )
+                                      VALUES (
+                                          (
+                                              SELECT id
+                                                FROM Authors
+                                               WHERE Author = '{auth[i]}'
+                                          ),
+                                          '{bookname[i]}',
+                                          (
+                                              SELECT id
+                                                FROM genres
+                                               WHERE title = '{genre[i]}'
+                                          ),
+                                          (
+                                              SELECT id
+                                                FROM link
+                                               WHERE way = '{way[i]}'
+                                          )
+                                      );""")
+                    self.con.commit()
+            except Exception as e:
+                self.infwrong = Dialog()
+                self.infwrong.show()
 
     def append_fav_show(self):
         """добавление из саммого избранное"""
@@ -231,7 +295,7 @@ class Tabs(QWidget, Readertab.UI_formtab):
         if valid == QMessageBox.Yes:
             cur = self.con.cursor()
             cur.execute(
-                "delete from Favourites where Favourites.link_id in (select link_id from link where link.way in (" + ", ".join(
+                "delete from Favourites where Favourites.link_id in (select link.id from link where link.way in (" + ", ".join(
                     '?' * len(ids)) + ")"")", ids)
             self.con.commit()
 
@@ -245,7 +309,6 @@ class Tabs(QWidget, Readertab.UI_formtab):
         # Получаем список элементов без повторов и их id
         rows = list(set([i.row() for i in self.readtableWidget.selectedItems()]))
         ids = [self.readtableWidget.item(i, 3).text() for i in rows]
-        print(ids)
         # Спрашиваем у пользователя подтверждение на удаление элементов
         valid = QMessageBox.question(
             self, '', "Действительно удалить элементы с id " + ",".join(ids),
@@ -255,7 +318,7 @@ class Tabs(QWidget, Readertab.UI_formtab):
         if valid == QMessageBox.Yes:
             cur = self.con.cursor()
             cur.execute(
-                "delete from Favourites where Favourites.link_id in (select link_id from link where link.way in (" + ", ".join(
+                "delete from Readed where Readed.link_id in (select link.id from link where link.way in (" + ", ".join(
                     '?' * len(ids)) + ")"")", ids)
             self.con.commit()
 
@@ -393,6 +456,7 @@ class Tabs(QWidget, Readertab.UI_formtab):
                        INNER JOIN
                        link ON Books.link_id = link.id;''').fetchall()
         # Заполнили размеры таблицы
+        print(result)
         if result:
             self.libtableWidget.setRowCount(len(result))
             # Если запись не нашлась, то не будем ничего делать
@@ -404,6 +468,10 @@ class Tabs(QWidget, Readertab.UI_formtab):
             for i, elem in enumerate(result):
                 for j, val in enumerate(elem):
                     self.libtableWidget.setItem(i, j, QTableWidgetItem(str(val)))
+        else:
+            self.libtableWidget.clear()
+            self.titles = [description[0] for description in cur.description]
+            self.libtableWidget.setHorizontalHeaderLabels(self.titles)
         cur = self.con.cursor()
         # Получили результат запроса, который ввели в текстовое поле
         result = cur.execute('''SELECT Favourites.title as 'название книги',
@@ -428,6 +496,10 @@ class Tabs(QWidget, Readertab.UI_formtab):
             for i, elem in enumerate(result):
                 for j, val in enumerate(elem):
                     self.favtableWidget.setItem(i, j, QTableWidgetItem(str(val)))
+        else:
+            self.favtableWidget.clear()
+            self.titles = [description[0] for description in cur.description]
+            self.favtableWidget.setHorizontalHeaderLabels(self.titles)
         cur = self.con.cursor()
         # Получили результат запроса, который ввели в текстовое поле
         result = cur.execute('''SELECT Readed.title as 'название книги',
@@ -453,6 +525,10 @@ class Tabs(QWidget, Readertab.UI_formtab):
             for i, elem in enumerate(result):
                 for j, val in enumerate(elem):
                     self.readtableWidget.setItem(i, j, QTableWidgetItem(str(val)))
+        else:
+            self.readtableWidget.clear()
+            self.titles = [description[0] for description in cur.description]
+            self.readtableWidget.setHorizontalHeaderLabels(self.titles)
 
 
 class AppendBooks(QWidget, Append_book.Ui_FoRm):
